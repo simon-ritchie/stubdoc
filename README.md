@@ -29,8 +29,14 @@ Then install dependencies (Maybe target version's Python install is necessary be
 $ poetry install --no-root --no-dev
 ```
 
-# Testing
+# Testing 
 
 # PyPI
+
+Build project for PyPI:
+
+```
+$ poetry run python build.py
+```
 
 

@@ -2,7 +2,7 @@
 name = "stubdoc"
 version = "0.1.0"
 description = ""
-authors = ["simonritchie"]
+authors = ["simon-ritchie"]
 license = "MIT LICENSE"
 
 [tool.poetry.dependencies]
