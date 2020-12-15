@@ -9,7 +9,7 @@ _DESCRIPTION: str = (
 )
 
 
-def main(args: Optional[argparse.Namespace] = None):
+def main():
     """
     Entry point of the command line interface.
 
@@ -29,6 +29,7 @@ def main(args: Optional[argparse.Namespace] = None):
         '-s', '--stub_path', type=str,
         help='Target stub file path. e.g., sample/path.pyi',
     )
-    print('module_path' ,args.module_path)
+    args: argparse.Namespace = parser.parse_args()
+    print('module_path' , args.module_path)
     print('stub_path', args.stub_path)
 

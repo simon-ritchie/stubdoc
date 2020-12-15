@@ -45,4 +45,13 @@ Build project for PyPI:
 $ poetry run python build.py
 ```
 
+Upload to PyPI:
+
+```
+$ twine upload dist/*
+```
+
+
+
+
 
