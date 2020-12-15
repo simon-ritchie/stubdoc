@@ -2,8 +2,38 @@
 """
 
 import os
+from datetime import datetime
+import subprocess as sp
 import shutil
 from typing import List
+
+
+def _run_command(command: str) -> None:
+    """
+    Run the specified command.
+
+    Parameters
+    ----------
+    command : str
+        The command string.
+
+    Raises
+    ------
+    Exception
+        If the command return code is not 0.
+    """
+    print(datetime.now(), f'Command started: {command}')
+    popen = sp.Popen(
+        command, shell=True, stdout=sp.PIPE, stderr=sp.STDOUT)
+    stdout_bytes: bytes = popen.communicate()[0]
+    try:
+        stdout: str = stdout_bytes.decode('utf-8')
+    except Exception:
+        stdout = stdout_bytes.decode('sjis')
+    print(datetime.now(), stdout)
+    if popen.returncode == 0:
+        return
+    raise Exception(f'Command failed: {popen.returncode}')
 
 
 def _main() -> None:
@@ -18,18 +48,12 @@ def _main() -> None:
         shutil.rmtree(removing_dir_path, ignore_errors=True)
 
     command: str = 'poetry run python setup.py sdist'
-    status_code: int = os.system(command)
-    if status_code != 0:
-        raise Exception(
-            f'Build command failed: {command}\nstatus code: {status_code}')
+    _run_command(command=command)
 
-    command = 'poetry run setup.py bdist_wheel'
-    status_code = os.system('poetry run setup.py bdist_wheel')
-    if status_code != 0:
-        raise Exception(
-            f'Build command failed: {command}\nstatus code: {status_code}')
+    command = 'poetry run python setup.py bdist_wheel'
+    _run_command(command=command)
 
-    print('Build completed.')
+    print(datetime.now(), 'Build completed!')
 
 
 if __name__ == "__main__":

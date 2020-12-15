@@ -29,7 +29,13 @@ Then install dependencies (Maybe target version's Python install is necessary be
 $ poetry install --no-root --no-dev
 ```
 
-# Testing 
+# Testing
+
+Run the following command for testing:
+
+```
+$ poetry run pytest --cov=stubdoc tests/ -v
+```
 
 # PyPI
 
