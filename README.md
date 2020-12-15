@@ -31,10 +31,10 @@ $ poetry install --no-root --no-dev
 
 # Testing
 
-Run the following command for testing:
+The following command will run testing:
 
 ```
-$ poetry run pytest --cov=stubdoc tests/ -v
+$ poetry run pytest --cov=./ tests/ -v
 ```
 
 # PyPI

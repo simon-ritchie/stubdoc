@@ -36,16 +36,25 @@ def _run_command(command: str) -> None:
     raise Exception(f'Command failed: {popen.returncode}')
 
 
+_REMOVING_DIR_PATHS: List[str] = [
+    './build',
+    './dist',
+    './stubdoc.egg-info',
+]
+
+
+def _remove_build_dirs() -> None:
+    """
+    Remove directories related to build process.
+    """
+    for removing_dir_path in _REMOVING_DIR_PATHS:
+        shutil.rmtree(removing_dir_path, ignore_errors=True)
+
+
 def _main() -> None:
     """Script entry point.
     """
-    _REMOVING_DIR_PATHS: List[str] = [
-        './build',
-        './dist',
-        './stubdoc.egg-info',
-    ]
-    for removing_dir_path in _REMOVING_DIR_PATHS:
-        shutil.rmtree(removing_dir_path, ignore_errors=True)
+    _remove_build_dirs()
 
     command: str = 'poetry run python setup.py sdist'
     _run_command(command=command)
