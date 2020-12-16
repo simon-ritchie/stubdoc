@@ -17,7 +17,6 @@ def test__add_arg() -> None:
                 long_name='--test_arg',
                 type_=str,
                 help='test help.',
-                required=True,
             ))
 
     with pytest.raises(ValueError):  # type: ignore
@@ -28,7 +27,6 @@ def test__add_arg() -> None:
                 long_name='--test_arg',
                 type_=str,
                 help='test help.',
-                required=True,
             ))
 
     with pytest.raises(ValueError):  # type: ignore
@@ -39,7 +37,6 @@ def test__add_arg() -> None:
                 long_name='-test_arg',
                 type_=str,
                 help='test help.',
-                required=True,
             ))
 
     cli._add_arg(
@@ -49,5 +46,20 @@ def test__add_arg() -> None:
             long_name='--test_arg',
             type_=str,
             help='test help.',
-            required=True,
         ))
+
+
+def test__validate_module_path_arg() -> None:
+    with pytest.raises(ValueError):  # type: ignore
+        cli._validate_module_path_arg(module_path_arg=None)
+
+    with pytest.raises(ValueError):  # type: ignore
+        cli._validate_module_path_arg(
+            module_path_arg='not_existing_module.py')
+
+    with pytest.raises(ValueError):  # type: ignore
+        cli._validate_module_path_arg(
+            module_path_arg='README.md')
+
+    cli._validate_module_path_arg(
+        module_path_arg='stubdoc/cli.py')

@@ -5,6 +5,7 @@ from typing import List, Optional
 import argparse
 from argparse import ArgumentParser
 from argparse import Namespace
+import os
 
 _DESCRIPTION: str = (
     'This command will add docstring to stub file.'
@@ -20,7 +21,7 @@ class Arg:
 
     def __init__(
             self, short_name: str, long_name: str, type_: type,
-            help: str, required: bool) -> None:
+            help: str) -> None:
         """
         The class that store single argument setting.
 
@@ -36,8 +37,6 @@ class Arg:
             Argument type. e.g., str, int, etc.
         help : str
             The argument's help text.
-        required : bool
-            If set to True, this argument will be required.
         """
         self.short_name = short_name
         self.long_name = long_name
@@ -84,14 +83,39 @@ ARGS: List[Arg] = [
     Arg(short_name='-m',
         long_name='--module_path',
         type_=str,
-        help='Stub file\'s original module path. e.g., sample/path.py',
-        required=True),
+        help='Stub file\'s original module path. e.g., sample/path.py',),
     Arg(short_name='-s',
         long_name='--stub_path',
         type_=str,
-        help='Target stub file path. e.g., sample/path.pyi',
-        required=True),
+        help='Target stub file path. e.g., sample/path.pyi'),
 ]
+
+
+def _validate_module_path_arg(module_path_arg: Optional[str]) -> None:
+    """
+    Validate specified module_path argument.
+
+    Parameters
+    ----------
+    module_path_arg : str or None
+        Specified module_path argument value.
+
+    Raises
+    ------
+    ValueError
+        - If module_path argument is None.
+        - If module that specified path not exists.
+        - If specified file name extension is not `.py`.
+    """
+    if module_path_arg is None:
+        raise ValueError(
+            'This command requires module_path argument.')
+    if not os.path.isfile(module_path_arg):
+        raise ValueError(
+            f'Specified module not found: {module_path_arg}')
+    if not module_path_arg.endswith('.py'):
+        raise ValueError(
+            f'A non-python module path specified: {module_path_arg}')
 
 
 def main():
@@ -109,6 +133,9 @@ def main():
     for arg in ARGS:
         _add_arg(parser=parser, arg=arg)
     args: Namespace = parser.parse_args()
+
+    _validate_module_path_arg(module_path_arg=args.module_path)
+
     print('module_path' , args.module_path)
     print('stub_path', args.stub_path)
 
