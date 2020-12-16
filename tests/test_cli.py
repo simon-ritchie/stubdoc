@@ -16,7 +16,8 @@ def test__add_arg() -> None:
                 short_name='--test_arg',
                 long_name='--test_arg',
                 type_=str,
-                help='test help.'
+                help='test help.',
+                required=True,
             ))
 
     with pytest.raises(ValueError):  # type: ignore
@@ -26,7 +27,8 @@ def test__add_arg() -> None:
                 short_name='test_arg',
                 long_name='--test_arg',
                 type_=str,
-                help='test help.'
+                help='test help.',
+                required=True,
             ))
 
     with pytest.raises(ValueError):  # type: ignore
@@ -36,7 +38,8 @@ def test__add_arg() -> None:
                 short_name='-t',
                 long_name='-test_arg',
                 type_=str,
-                help='test help.'
+                help='test help.',
+                required=True,
             ))
 
     cli._add_arg(
@@ -45,5 +48,6 @@ def test__add_arg() -> None:
             short_name='-t',
             long_name='--test_arg',
             type_=str,
-            help='test help.'
+            help='test help.',
+            required=True,
         ))

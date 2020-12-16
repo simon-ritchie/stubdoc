@@ -20,7 +20,7 @@ class Arg:
 
     def __init__(
             self, short_name: str, long_name: str, type_: type,
-            help: str) -> None:
+            help: str, required: bool) -> None:
         """
         The class that store single argument setting.
 
@@ -36,6 +36,8 @@ class Arg:
             Argument type. e.g., str, int, etc.
         help : str
             The argument's help text.
+        required : bool
+            If set to True, this argument will be required.
         """
         self.short_name = short_name
         self.long_name = long_name
@@ -82,11 +84,13 @@ ARGS: List[Arg] = [
     Arg(short_name='-m',
         long_name='--module_path',
         type_=str,
-        help='Stub file\'s original module path. e.g., sample/path.py'),
+        help='Stub file\'s original module path. e.g., sample/path.py',
+        required=True),
     Arg(short_name='-s',
         long_name='--stub_path',
         type_=str,
-        help='Target stub file path. e.g., sample/path.pyi'),
+        help='Target stub file path. e.g., sample/path.pyi',
+        required=True),
 ]
 
 

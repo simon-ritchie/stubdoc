@@ -31,10 +31,16 @@ $ poetry install --no-root --no-dev
 
 # Testing
 
-The following command will run testing:
+The following command will run overall testing:
 
 ```
-$ poetry run pytest --cov=./ tests/ -v
+$ poetry run pytest --cov=./ tests/ -v -s
+```
+
+If module or function name specification is necessary, add `-k` keyword argument to command.
+
+```
+$ poetry run pytest --cov=./ tests/ -v -s -k <module_or_func_name>
 ```
 
 # PyPI
