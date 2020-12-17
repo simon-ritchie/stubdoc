@@ -104,8 +104,8 @@ def _validate_module_path_arg(module_path_arg: Optional[str]) -> None:
     ------
     ValueError
         - If module_path argument is None.
-        - If module that specified path not exists.
-        - If specified file name extension is not `.py`.
+        - If module that specified by argument not exists.
+        - If specified file name's extension is not `.py`.
     """
     if module_path_arg is None:
         raise ValueError(
@@ -116,6 +116,33 @@ def _validate_module_path_arg(module_path_arg: Optional[str]) -> None:
     if not module_path_arg.endswith('.py'):
         raise ValueError(
             f'A non-python module path specified: {module_path_arg}')
+
+
+def _validate_stub_path_arg(stub_path_arg: Optional[str]) -> None:
+    """
+    Validate specified stub_path argument.
+
+    Parameters
+    ----------
+    stub_path_arg : str or None
+        Specified stub_path argument value.
+
+    Raises
+    ------
+    ValueError
+        - If stub_path argument is None.
+        - If stub file that specified by argument not exists.
+        - If specified file name's extension is not `.pyi`.
+    """
+    if stub_path_arg is None:
+        raise ValueError(
+            'This command requires stub_path argument.')
+    if not os.path.isfile(stub_path_arg):
+        raise ValueError(
+            f'Specified stub file not found: {stub_path_arg}')
+    if not stub_path_arg.endswith('.pyi'):
+        raise ValueError(
+            f'A non-stub file path specified: {stub_path_arg}')
 
 
 def main():
@@ -135,7 +162,4 @@ def main():
     args: Namespace = parser.parse_args()
 
     _validate_module_path_arg(module_path_arg=args.module_path)
-
-    print('module_path' , args.module_path)
-    print('stub_path', args.stub_path)
-
+    _validate_stub_path_arg(stub_path_arg=args.stub_path)

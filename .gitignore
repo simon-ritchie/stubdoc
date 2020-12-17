@@ -4,3 +4,4 @@
 *.pyc
 /.coverage
 /build
+tmp_test_stub.pyi

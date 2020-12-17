@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 from argparse import Namespace
+import os
 
 import pytest
 
@@ -63,3 +64,24 @@ def test__validate_module_path_arg() -> None:
 
     cli._validate_module_path_arg(
         module_path_arg='stubdoc/cli.py')
+
+
+def test__validate_stub_path_arg() -> None:
+    with pytest.raises(ValueError):  # type: ignore
+        cli._validate_stub_path_arg(stub_path_arg=None)
+
+    test_tmp_stub_file_path = './tmp_test_stub.pyi'
+    if os.path.exists(test_tmp_stub_file_path):
+        os.remove(test_tmp_stub_file_path)
+    with pytest.raises(ValueError):  # type: ignore
+        cli._validate_stub_path_arg(
+            stub_path_arg=test_tmp_stub_file_path)
+
+    with pytest.raises(ValueError):  # type: ignore
+        cli._validate_stub_path_arg(
+            stub_path_arg='stubdoc/cli.py')
+
+    with open(test_tmp_stub_file_path, 'w') as f:
+        f.write('\n')
+    cli._validate_stub_path_arg(stub_path_arg=test_tmp_stub_file_path)
+    os.remove(test_tmp_stub_file_path)
