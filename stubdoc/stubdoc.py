@@ -430,6 +430,10 @@ def _get_callable_names_from_module(module: ModuleType) -> List[str]:
     callable_names: List[str] = []
     members: List[Tuple[str, Any]] = inspect.getmembers(module)
     for member_name, member_val in members:
+        if not hasattr(member_val, '__module__'):
+            continue
+        if member_val.__module__ != module.__name__:
+            continue
         if inspect.isfunction(member_val):
             callable_names.append(member_name)
             continue

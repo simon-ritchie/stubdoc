@@ -7,6 +7,7 @@ import sys
 import pytest
 
 from stubdoc import stubdoc
+from stubdoc.stubdoc import _get_callable_names_from_module
 
 
 def setup() -> None:
@@ -96,12 +97,14 @@ def test__append_class_callable_names_to_list() -> None:
 
 def test__get_callable_names_from_module():
     this_module: ModuleType = sys.modules[__name__]
-    callable_names: List[str] = stubdoc._get_callable_names_from_module(
+    callable_names: List[str] = _get_callable_names_from_module(
         module=this_module,
     )
     assert 'test__get_callable_names_from_module' in callable_names
     assert '_TestClass1.__init__' in callable_names
     assert 'test_value' not in callable_names
+    assert 'ModuleType' not in callable_names
+    assert '_get_callable_names_from_module' not in callable_names
 
 
 def _test_docstring_existing_func(a: int) -> int:
