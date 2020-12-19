@@ -90,9 +90,8 @@ def test__append_class_callable_names_to_list() -> None:
         sorted([
             '_TestClass1.__init__',
             '_TestClass1.test_method',
+            '_TestClass1.test_no_docstring_method',
             '_TestClass1.test_property'])
-
-    print(callable_names)
 
 
 def test__get_callable_names_from_module():
