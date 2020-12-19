@@ -41,6 +41,8 @@ Notes: If you have not installed stubdoc yet, you need to install that before co
 
 ```
 $ stubdoc -m stubdoc/stubdoc.py -s out/stubdoc/stubdoc.pyi
+$ stubdoc -m samples/sample.py -s out/samples/sample.pyi
+$ stubdoc -m tests/test_stubdoc.py -s out/tests/test_stubdoc.pyi
 ```
 
 And check that stub files.
