@@ -1,3 +1,5 @@
+import os
+import shutil
 from types import ModuleType
 from typing import List
 import sys
@@ -5,6 +7,27 @@ import sys
 import pytest
 
 from stubdoc import stubdoc
+
+
+def setup() -> None:
+    _delete_test_modules_and_stubs()
+
+
+def teardown() -> None:
+    _delete_test_modules_and_stubs()
+
+
+_TEST_MODS_AND_STUBS_DIR_PATH: str = './tests/tmp_mods_and_stubs/'
+
+
+def _delete_test_modules_and_stubs() -> None:
+    """
+    Delete modules and stubs added for testing.
+    """
+    shutil.rmtree(
+        _TEST_MODS_AND_STUBS_DIR_PATH,
+        ignore_errors=True,
+    )
 
 
 def test__read_txt() -> None:
@@ -313,3 +336,129 @@ class _TestClass1:
         """
     def test_method(self): pass'''
     assert result_stub_str == expected_stub_str
+
+
+def test_add_docstring_to_stubfile() -> None:
+    _delete_test_modules_and_stubs()
+    os.makedirs(_TEST_MODS_AND_STUBS_DIR_PATH, exist_ok=True)
+
+    tmp_module_path: str = os.path.join(
+        _TEST_MODS_AND_STUBS_DIR_PATH,
+        'test_module_1.py',
+    )
+    tmp_stub_path: str = os.path.join(
+        _TEST_MODS_AND_STUBS_DIR_PATH,
+        'test_module_1.pyi',
+    )
+    test_module_str: str = '''
+test_value_1: int = 100
+
+
+def test_function_1(a:int, b: str) -> None:
+    """
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+    laboris nisi ut aliquip ex ea commodo consequat.
+
+    Parameters
+    ----------
+    a : int
+        Test argument 1.
+    b : str
+        Test argument 2.
+    """
+
+class TestClass1:
+
+    def __init__(self, c: int) -> None:
+        """Test constructor.
+
+        Parameters
+        ----------
+        c : int
+            Test argument 3.
+        """
+        print(100)
+
+    @property
+    def test_property(self) -> int:
+        """
+        Test Property
+
+        Returns
+        -------
+        test_value_1 : int
+            Test return value 1.
+        """
+        return 100
+'''
+    with open(tmp_module_path, 'w') as f:
+        f.write(test_module_str)
+
+    test_stub_str: str = """test_value_1: int = ...
+
+def test_function_1(a:int, b: str) -> None: ...
+
+class TestClass1:
+    def __init__(self, c: int) -> None: pass
+    @property
+    def test_property(self) -> int: ...
+"""
+    with open(tmp_stub_path, 'w') as f:
+        f.write(test_stub_str)
+
+    tmp_init_file_path: str = os.path.join(
+        _TEST_MODS_AND_STUBS_DIR_PATH, '__init__.py',
+    )
+    with open(tmp_init_file_path, 'w') as f:
+        f.write('\n')
+
+    stubdoc.add_docstring_to_stubfile(
+        original_module_path=tmp_module_path,
+        stub_file_path=tmp_stub_path,
+    )
+    with open(tmp_stub_path, 'r') as f:
+        result_stub_str: str = f.read()
+
+    with open('./tmp.txt', 'w') as f:
+        f.write(result_stub_str)
+
+    expected_stub_str: str = '''test_value_1: int = ...
+
+def test_function_1(a:int, b: str) -> None:
+    """
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+    laboris nisi ut aliquip ex ea commodo consequat.
+
+    Parameters
+    ----------
+    a : int
+        Test argument 1.
+    b : str
+        Test argument 2.
+    """
+
+class TestClass1:
+    def __init__(self, c: int) -> None:
+        """
+        Test constructor.
+
+        Parameters
+        ----------
+        c : int
+            Test argument 3.
+        """
+    @property
+    def test_property(self) -> int:
+        """
+        Test Property
+
+        Returns
+        -------
+        test_value_1 : int
+            Test return value 1.
+        """
+'''
+    assert result_stub_str == expected_stub_str
+    _delete_test_modules_and_stubs()

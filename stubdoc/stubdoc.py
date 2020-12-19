@@ -28,7 +28,6 @@ def add_docstring_to_stubfile(
         Target stub file path.
     """
     module = _read_module(module_path=original_module_path)
-    module_str: str = _read_txt(file_path=original_module_path)
     stub_str: str = _read_txt(file_path=stub_file_path)
     callable_names: List[str] = _get_callable_names_from_module(
         module=module)
@@ -47,6 +46,10 @@ def add_docstring_to_stubfile(
             method_name=callable_name,
             module=module,
         )
+    if not stub_str.endswith('\n'):
+        stub_str += '\n'
+    with open(stub_file_path, 'w') as f:
+        f.write(stub_str)
 
 
 class _ClassScopeLineRange:
