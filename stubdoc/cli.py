@@ -7,6 +7,8 @@ from argparse import ArgumentParser
 from argparse import Namespace
 import os
 
+from stubdoc import stubdoc
+
 _DESCRIPTION: str = (
     'This command will add docstring to stub file.'
 )
@@ -163,3 +165,7 @@ def main():
 
     _validate_module_path_arg(module_path_arg=args.module_path)
     _validate_stub_path_arg(stub_path_arg=args.stub_path)
+
+    stubdoc.add_docstring_to_stubfile(
+        original_module_path=args.module_path,
+        stub_file_path=args.stub_path)

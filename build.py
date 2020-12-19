@@ -1,7 +1,6 @@
 """Build this project for PyPI.
 """
 
-import os
 from datetime import datetime
 import subprocess as sp
 import shutil
