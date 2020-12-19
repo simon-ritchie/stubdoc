@@ -35,12 +35,28 @@ Notes: this command maybe hang-up on Windows. In that case it is necessary to pr
 $ stubgen --include-private ./
 ```
 
+# Try to apply stubdoc to generated stub
+
+Notes: If you have not installed stubdoc yet, you need to install that before command.
+
+```
+$ stubdoc -m stubdoc/stubdoc.py -s out/stubdoc/stubdoc.pyi
+```
+
+And check that stub files.
+
 # PyPI
 
 Build project for PyPI:
 
 ```
 $ poetry run python build.py
+```
+
+Install built package via pip command (need to replace `<version_num>`, for example, `0.1.4`):
+
+```
+$ pip install dist/stubdoc-<version_num>-py3-none-any.whl
 ```
 
 Upload to PyPI:
