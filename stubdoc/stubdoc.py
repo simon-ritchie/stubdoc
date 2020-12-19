@@ -42,6 +42,190 @@ def add_docstring_to_stubfile(
                 module=module,
             )
             continue
+        stub_str = _add_docstring_to_class_method(
+            stub_str=stub_str,
+            method_name=callable_name,
+            module=module,
+        )
+
+
+class _ClassScopeLineRange:
+
+    _class_name: str
+    _stub_str: str
+    start_line: int
+    end_line: int
+
+    def __init__(self, class_name: str, stub_str: str) -> None:
+        """
+        The class that stores specified class's scope line range
+        in stub string.
+        e.g., if that class scope is starting at line 10, then
+        start_line attribute will set to 10. end_line attribute is
+        also same.
+
+        Parameters
+        ----------
+        class_name : str
+            Target class name that defined in stub string.
+        stub_str : str
+            Overall stub string.
+
+        Raises
+        ------
+        Exception
+            If specified class name not found in the stub string.
+        """
+        self._class_name = class_name
+        self._stub_str = stub_str
+        pattern = r'^class ' + class_name + r'[\(:].*$'
+        stub_lines: List[str] = stub_str.splitlines()
+        start_line: Optional[int] = None
+        end_line: Optional[int] = None
+        last_line: int = 1
+        for i, stub_line in enumerate(stub_lines):
+            last_line = i + 1
+            if start_line is None:
+                match: Optional[re.Match] = re.search(
+                    pattern=pattern, string=stub_line)
+                if match is None:
+                    continue
+                start_line = i + 1
+                continue
+            if stub_line == '' or stub_line == '    ':
+                continue
+            if not stub_line.startswith('    '):
+                end_line = i
+                break
+        if start_line is not None and end_line is None:
+            end_line = last_line
+        if start_line is None or end_line is None:
+            raise Exception(f'Target class name not found: {class_name}')
+        self.start_line = start_line
+        self.end_line = end_line
+
+
+def _add_docstring_to_class_method(
+        stub_str: str, method_name: str, module: ModuleType) -> str:
+    """
+    Add docstring to a specified class method.
+
+    Parameters
+    ----------
+    stub_str : str
+        Target stub file's string.
+    method_name : str
+        Target method name (top-level class method only).
+        Class name and method name need to be concatenated by comma.
+        e.g. `ClassName.method_name`
+    module: ModuleType
+        Stub file's original module.
+
+    Returns
+    -------
+    result_stub_str : str
+        Stub file's string after docstring added.
+    """
+    class_name: str = method_name.split('.')[0]
+    method_name = method_name.split('.')[1]
+    line_range: _ClassScopeLineRange = _ClassScopeLineRange(
+        class_name=class_name, stub_str=stub_str)
+    stub_lines: List[str] = stub_str.splitlines()
+    result_stub_str: str = ''
+    pattern = re.compile(pattern=r'    def ' + method_name + r'\(.+$')
+    for i, stub_line in enumerate(stub_lines):
+        if result_stub_str != '':
+            result_stub_str += '\n'
+        line_num: int = i + 1
+        if line_num < line_range.start_line or line_range.end_line < line_num:
+            result_stub_str += stub_line
+            continue
+        match: Optional[re.Match] = pattern.search(string=stub_line)
+        if match is None:
+            result_stub_str += stub_line
+            continue
+        docstring: str = _get_docstring_from_top_level_class_method(
+            class_name=class_name,
+            method_name=method_name,
+            module=module,
+        )
+        stub_line = _remove_line_end_ellipsis_or_pass_keyword(line=stub_line)
+        stub_line = _add_docstring_to_top_level_class_method(
+            line=stub_line, docstring=docstring)
+        result_stub_str += stub_line
+    return result_stub_str
+
+
+def _add_docstring_to_top_level_class_method(
+        line: str, docstring: str) -> str:
+    """
+    Add docstring to the line string of top-level class's method.
+
+    Parameters
+    ----------
+    line : str
+        Target class's method line string.
+        e.g., `    def sample_method(self) -> None:`
+    docstring : str
+        A doctring to add.
+
+    Returns
+    -------
+    line : str
+        Docstring added line str.
+    """
+    eight_tabs: str = '        '
+    line += f'\n{eight_tabs}"""'
+    docstring_lines: List[str] = docstring.splitlines()
+    for docstring_line in docstring_lines:
+        if docstring_line == '':
+            line += '\n'
+            continue
+        if not docstring_line.startswith(eight_tabs):
+            docstring_line = f'{eight_tabs}{docstring_line}'
+        line += f'\n{docstring_line}'
+    line = line.rstrip()
+    line += f'\n{eight_tabs}"""'
+    return line
+
+
+def _get_docstring_from_top_level_class_method(
+        class_name: str, method_name: str, module: ModuleType) -> str:
+    """
+    Get docstring from method of top-level class.
+
+    Parameters
+    ----------
+    class_name : str
+        Target class name.
+    method_name : str
+        Target class's method name.
+    module : ModuleType
+        Stub file's original module.
+
+    Returns
+    -------
+    docstring : str
+        Class method's docstring.
+    """
+    members: List[Tuple[str, Any]] = inspect.getmembers(
+        module, predicate=inspect.isclass)
+    target_class: Optional[type] = None
+    for member_name, member_val in members:
+        if member_name != class_name:
+            continue
+        target_class = member_val
+    members = inspect.getmembers(target_class)
+    for member_name, member_val in members:
+        if member_name != method_name:
+            continue
+        target_method: Callable = member_val
+        if target_method.__doc__ is None:
+            return ''
+        docstring: str = target_method.__doc__
+        docstring = docstring.strip()
+        return docstring
+    return ''
 
 
 def _remove_doc_not_existing_func_from_callable_names(

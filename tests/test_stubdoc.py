@@ -28,14 +28,23 @@ class _TestClass1:
     test_val: int = 100
 
     def __init__(self):
+        """Test docstring of __init__.
+        """
         ...
 
     def test_method(self):
+        """Test docstring of test_method.
+        """
         ...
 
     @property
     def test_property(self) -> int:
+        """Test docstring of property.
+        """
         return 5
+
+    def test_no_docstring_method(self) -> None:
+        ...
 
     def __eq__(self, other) -> bool:
         return True
@@ -175,3 +184,132 @@ def test__add_doctring_to_target_function() -> None:
         '\ndef _test_docstring_not_existing_func(): pass'
     )
     assert result_stub_str == expected_str
+
+
+def test__ClassScopeLineRange() -> None:
+    stub_str: str = """test_value: int = 100
+
+def test_func_1(a: str) -> int: ...
+
+class TestClass1:
+    def test_func_2(self) -> None: pass
+
+class TestClass2:
+    def test_func_3(self) -> None: pass
+
+    def test_func_4(self) -> None: ...
+
+class TestClass3(object):
+    ...
+"""
+    class_scope_line_range = stubdoc._ClassScopeLineRange(
+        class_name='TestClass1',
+        stub_str=stub_str,
+    )
+    assert class_scope_line_range.start_line == 5
+    assert class_scope_line_range.end_line == 7
+
+    class_scope_line_range = stubdoc._ClassScopeLineRange(
+        class_name='TestClass2',
+        stub_str=stub_str,
+    )
+    assert class_scope_line_range.start_line == 8
+    assert class_scope_line_range.end_line == 12
+
+    class_scope_line_range = stubdoc._ClassScopeLineRange(
+        class_name='TestClass3',
+        stub_str=stub_str,
+    )
+    assert class_scope_line_range.start_line == 13
+    assert class_scope_line_range.end_line == 14
+
+    with pytest.raises(Exception):  # type: ignore
+        class_scope_line_range = stubdoc._ClassScopeLineRange(
+            class_name='TestClass4',
+            stub_str=stub_str,
+        )
+
+
+def test__get_docstring_from_top_level_class_method() -> None:
+    this_module: ModuleType = sys.modules[__name__]
+
+    docstring: str = stubdoc._get_docstring_from_top_level_class_method(
+        class_name='_TestClass1',
+        method_name='__init__',
+        module=this_module,
+    )
+    assert docstring == 'Test docstring of __init__.'
+
+    docstring: str = stubdoc._get_docstring_from_top_level_class_method(
+        class_name='_TestClass1',
+        method_name='test_method',
+        module=this_module,
+    )
+    assert docstring == 'Test docstring of test_method.'
+
+    docstring = stubdoc._get_docstring_from_top_level_class_method(
+        class_name='_TestClass1',
+        method_name='test_property',
+        module=this_module,
+    )
+    assert docstring == 'Test docstring of property.'
+
+    docstring = stubdoc._get_docstring_from_top_level_class_method(
+        class_name='_TestClass1',
+        method_name='test_no_docstring_method',
+        module=this_module,
+    )
+    assert docstring == ''
+
+    docstring = stubdoc._get_docstring_from_top_level_class_method(
+        class_name='_TestClass1',
+        method_name='not_existing_method',
+        module=this_module,
+    )
+    assert docstring == ''
+
+
+def test__add_docstring_to_top_level_class_method() -> None:
+    line: str = '    def test_method(a: int) -> None:'
+    docstring: str = \
+        """Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+        laboris nisi ut aliquip ex ea commodo consequat.
+        """
+    line = stubdoc._add_docstring_to_top_level_class_method(
+        line=line,
+        docstring=docstring,
+    )
+    expected_line: str = '''    def test_method(a: int) -> None:
+        """
+        Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+        laboris nisi ut aliquip ex ea commodo consequat.
+        """'''
+    assert line == expected_line
+
+
+def test__add_docstring_to_class_method() -> None:
+    this_module: ModuleType = sys.modules[__name__]
+    stub_str: str = """test_value: int = 100
+
+class _TestClass1:
+
+    def __init__(self): ...
+    def test_method(self): pass
+"""
+    result_stub_str: str = stubdoc._add_docstring_to_class_method(
+        stub_str=stub_str,
+        method_name='_TestClass1.__init__',
+        module=this_module,
+    )
+    expected_stub_str: str = '''test_value: int = 100
+
+class _TestClass1:
+
+    def __init__(self):
+        """
+        Test docstring of __init__.
+        """
+    def test_method(self): pass'''
+    assert result_stub_str == expected_stub_str
