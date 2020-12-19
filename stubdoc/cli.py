@@ -11,6 +11,12 @@ from stubdoc import stubdoc
 
 _DESCRIPTION: str = (
     'This command will add docstring to stub file.'
+    ' Currently supported one-line stub implementation,'
+    ' like mypy\'s stubgen command, something as follows:'
+    ' def any_func(a: int, b: str) -> None: ...'
+    ' If line break exists after colon, this command will'
+    ' not work correctly.'
+    ' Also not supported nested function, etc.'
 )
 
 
