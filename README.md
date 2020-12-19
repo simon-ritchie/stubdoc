@@ -113,6 +113,11 @@ class SampleClass:
 
 # Installing
 
+Installation via pip command is provided:
+
+```
+$ pip install stubdoc
+```
 
 # Dependencies
 
@@ -120,6 +125,60 @@ class SampleClass:
 
 # Usage
 
+```
+This command will add docstring to stub file. Currently supported one-line stub implementation, like mypy's stubgen
+command, something as follows: def any_func(a: int, b: str) -> None: ... If line break exists after colon, this
+command will not work correctly. Also not supported nested function, etc.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -m MODULE_PATH, --module_path MODULE_PATH
+                        Stub file's original module path. e.g., sample/path.py
+  -s STUB_PATH, --stub_path STUB_PATH
+                        Target stub file path. e.g., sample/path.pyi
+```
+
+Command example:
+
+```
+$ stubdoc -m samples/sample.py -s out/samples/sample.pyi
+```
+
+or
+
+```
+$ stubdoc --module_path samples/sample.py --stub_path out/samples/sample.pyi
+```
+
 # Limitations
 
+This library supported only one-line stub implementation, like this:
 
+```py
+def sample_func(a: int, b: str) -> bool: ...
+
+class SampleClass:
+    def __init__(self) -> None: ...
+    @property
+    def sample_property(self) -> int: ...
+```
+
+Not supported line breaks after function's colon:
+
+```py
+def sample_func(a: int, b: str) -> bool: ...
+
+class SampleClass:
+    def __init__(self) -> None:
+        ...
+    @property
+    def sample_property(self) -> int:
+        pass
+```
+
+Also not supported nested functions, like this (docstring will add to only top-level function):
+
+```py
+def sample_func_1(a: int, b: str) -> bool:
+    def sample_func_2(c: list) -> None: ...
+```
