@@ -1,18 +1,19 @@
 """The module that implements core functions.
 """
 
+import re
 import inspect
 import sys
 import importlib
 from types import ModuleType
 
-from typing import Any, Callable, List, Tuple
+from typing import Any, Callable, List, Optional, Tuple
 
 
 def add_docstring_to_stubfile(
         original_module_path: str, stub_file_path: str) -> None:
     """
-    Add docstring to specified stub file.
+    Add docstring to a specified stub file.
 
     Notes
     -----
@@ -31,6 +32,174 @@ def add_docstring_to_stubfile(
     stub_str: str = _read_txt(file_path=stub_file_path)
     callable_names: List[str] = _get_callable_names_from_module(
         module=module)
+    callable_names = _remove_doc_not_existing_func_from_callable_names(
+        callable_names=callable_names, module=module)
+    for callable_name in callable_names:
+        if '.' not in callable_name:
+            stub_str = _add_doctring_to_target_function(
+                stub_str=stub_str,
+                function_name=callable_name,
+                module=module,
+            )
+            continue
+
+
+def _remove_doc_not_existing_func_from_callable_names(
+        callable_names: List[str], module: ModuleType) -> List[str]:
+    """
+    Remove top-level function that docstring not existing from callable
+    names list.
+
+    Parameters
+    ----------
+    callable_names : list of str
+        Callable names list to check.
+    module : ModuleType
+        The module that specified callables are defined.
+
+    Returns
+    -------
+    remove_callable_names : list of str
+        The list that removed docstring not existing functions.
+    """
+    remove_callable_names: List[str] = []
+    for callable_name in callable_names:
+        if '.' in callable_name:
+            remove_callable_names.append(callable_name)
+            continue
+        docstring: str = _get_docstring_from_top_level_func(
+            function_name=callable_name,
+            module=module)
+        if docstring == '':
+            continue
+        remove_callable_names.append(callable_name)
+    return remove_callable_names
+
+
+def _add_doctring_to_target_function(
+        stub_str: str, function_name: str,
+        module: ModuleType) -> str:
+    """
+    Add doctring to a specified function.
+
+    Parameters
+    ----------
+    stub_str : str
+        Target stub file's string.
+    function_name : str
+        Target function name (top-level function only).
+    module: ModuleType
+        Stub file's original module.
+
+    Returns
+    -------
+    result_stub_str : str
+        Stub file's string after docstring added.
+    """
+    result_stub_str: str = ''
+    lines: List[str] = stub_str.splitlines()
+    pattern = re.compile(pattern=r'^def ' + function_name + r'\(.+$')
+    for line in lines:
+        if result_stub_str != '':
+            result_stub_str += '\n'
+        match: Optional[re.Match] = pattern.search(string=line)
+        if match is None:
+            result_stub_str += line
+            continue
+        docstring: str = _get_docstring_from_top_level_func(
+            function_name=function_name,
+            module=module,
+        )
+        line = _remove_line_end_ellipsis_or_pass_keyword(line=line)
+        line = _add_docstring_to_top_level_func(
+            line=line, docstring=docstring)
+        result_stub_str += line
+
+    return result_stub_str
+
+
+def _add_docstring_to_top_level_func(line: str, docstring: str) -> str:
+    """
+    Add docstring to the top-level function line string.
+
+    Parameters
+    ----------
+    line : str
+        Target function line string.
+        e.g., `def sample_func(a: int) -> None:`
+    docstring : str
+        A doctring to add.
+
+    Returns
+    -------
+    line : str
+        Docstring added line str.
+    """
+    line += '\n    """'
+    docstring_lines: List[str] = docstring.splitlines()
+    for docstring_line in docstring_lines:
+        if docstring_line == '':
+            line += '\n'
+            continue
+        if not docstring_line.startswith('    '):
+            docstring_line = f'    {docstring_line}'
+        line += f'\n{docstring_line}'
+    line += '\n    """'
+    return line
+
+
+def _remove_line_end_ellipsis_or_pass_keyword(line: str) -> str:
+    """
+    Remove ellipsis or pass keyword from end of line
+    (e.g., `def sample_func(): ...` or `def sample_func(): pass`).
+
+    Parameters
+    ----------
+    line : str
+        Target line string.
+
+    Returns
+    -------
+    result_line : str
+        Line string that removed ellipsis or pass keyword string.
+    """
+    if line.endswith(' ...'):
+        line = re.sub(pattern=r' ...$', repl='', string=line)
+        return line
+    if line.endswith(' pass'):
+        line = re.sub(pattern=r' pass$', repl='', string=line)
+        return line
+    return line
+
+
+def _get_docstring_from_top_level_func(
+        function_name: str, module: ModuleType) -> str:
+    """
+    Get docstring of the specified top-level function name.
+
+    Parameters
+    ----------
+    function_name : str
+        Target function name.
+    module : ModuleType
+        Target module that specified function exists.
+
+    Returns
+    -------
+    docstring : str
+        Specified function's docstring.
+    """
+    members: List[Tuple[str, Any]] = inspect.getmembers(module)
+    for member_name, member_val in members:
+        if member_name != function_name:
+            continue
+        target_function: Callable = member_val
+        if target_function.__doc__ is None:
+            return ''
+        docstring : str = target_function.__doc__
+        docstring = docstring.strip()
+        return docstring
+    return ''
 
 
 def _read_module(module_path: str) -> ModuleType:

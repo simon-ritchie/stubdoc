@@ -71,3 +71,107 @@ def test__get_callable_names_from_module():
     assert 'test__get_callable_names_from_module' in callable_names
     assert '_TestClass1.__init__' in callable_names
     assert 'test_value' not in callable_names
+
+
+def _test_docstring_existing_func(a: int) -> int:
+    """Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+
+    laboris nisi ut aliquip ex ea commodo consequat.
+    """
+    ...
+
+
+def _test_docstring_not_existing_func():
+    ...
+
+
+def test__get_docstring_from_top_level_func() -> None:
+    this_module: ModuleType = sys.modules[__name__]
+    docstring: str = stubdoc._get_docstring_from_top_level_func(
+        function_name='_test_docstring_existing_func',
+        module=this_module)
+    assert docstring.startswith('Lorem ipsum dolor sit amet,')
+    assert docstring.endswith('ex ea commodo consequat.')
+
+    docstring = stubdoc._get_docstring_from_top_level_func(
+        function_name='_test_docstring_not_existing_func',
+        module=this_module)
+    assert docstring == ''
+
+    docstring = stubdoc._get_docstring_from_top_level_func(
+        function_name='not_existing_func',
+        module=this_module)
+    assert docstring == ''
+
+
+def test__remove_doc_not_existing_func_from_callable_names() -> None:
+    this_module: ModuleType = sys.modules[__name__]
+    callable_names: List[str] = [
+        '_TestClass1.__init__',
+        '_test_docstring_existing_func',
+        '_test_docstring_not_existing_func',
+    ]
+    callable_names = stubdoc.\
+        _remove_doc_not_existing_func_from_callable_names(
+            callable_names= callable_names,
+            module=this_module)
+    expected_list: List[str] = [
+        '_TestClass1.__init__',
+        '_test_docstring_existing_func',
+    ]
+    assert callable_names == expected_list
+
+
+def test__remove_line_end_ellipsis_or_pass_keyword():
+    line: str = stubdoc._remove_line_end_ellipsis_or_pass_keyword(
+        line='def test_func(a: int) -> int: ...')
+    assert line == 'def test_func(a: int) -> int:'
+
+    line = stubdoc._remove_line_end_ellipsis_or_pass_keyword(
+        line='def test_func(a:i nt) -> int: pass')
+    assert line == 'def test_func(a:i nt) -> int:'
+
+    line = stubdoc._remove_line_end_ellipsis_or_pass_keyword(
+        line='test_val: int = 100')
+    assert line == 'test_val: int = 100'
+
+
+def test__add_docstring_to_top_level_func():
+
+    line: str = stubdoc._add_docstring_to_top_level_func(
+        line='def test_func(a: int) -> int:',
+        docstring=(
+            'Lorem ipsum dolor sit amet, consectetur adipiscing elit,'
+            '\nsed do eiusmod tempor incididunt ut labore et dolore magna.'
+        ))
+    expected_line: str = (
+        'def test_func(a: int) -> int:'
+        '\n    """'
+        '\n    Lorem ipsum dolor sit amet, consectetur adipiscing elit,'
+        '\n    sed do eiusmod tempor incididunt ut labore et dolore magna.'
+        '\n    """'
+    )
+    assert line == expected_line
+
+
+def test__add_doctring_to_target_function() -> None:
+    this_module: ModuleType = sys.modules[__name__]
+    stub_str: str = (
+        'def _test_docstring_existing_func(a: int) -> int: ...'
+        '\ndef _test_docstring_not_existing_func(): pass'
+    )
+    result_stub_str: str = stubdoc._add_doctring_to_target_function(
+        stub_str=stub_str,
+        function_name='_test_docstring_existing_func',
+        module=this_module,
+    )
+    expected_str: str = (
+        'def _test_docstring_existing_func(a: int) -> int:'
+        '\n    """'
+        '\n    Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
+        '\n'
+        '\n    laboris nisi ut aliquip ex ea commodo consequat.'
+        '\n    """'
+        '\ndef _test_docstring_not_existing_func(): pass'
+    )
+    assert result_stub_str == expected_str

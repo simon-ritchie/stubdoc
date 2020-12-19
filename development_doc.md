@@ -29,8 +29,10 @@ $ poetry run pytest --cov=./ tests/ -v -s -k <module_or_func_name>
 
 # Create stub files
 
+Notes: this command maybe hang-up on Windows. In that case it is necessary to press Ctrl + C to stop.
+
 ```
-$ stubgen --include-private ./ 
+$ stubgen --include-private ./
 ```
 
 # PyPI
