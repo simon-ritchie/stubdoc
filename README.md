@@ -166,7 +166,8 @@ class SampleClass:
 Not supported line breaks after function's colon:
 
 ```py
-def sample_func(a: int, b: str) -> bool: ...
+def sample_func(a: int, b: str) -> bool:
+    ...
 
 class SampleClass:
     def __init__(self) -> None:
