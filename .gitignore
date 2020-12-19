@@ -7,3 +7,4 @@
 tmp_test_stub.pyi
 /out
 /tmp.txt
+/poetry.lock
