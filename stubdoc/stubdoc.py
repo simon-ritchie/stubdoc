@@ -1,7 +1,6 @@
 """The module that implements core functions.
 """
 
-import os
 import re
 import inspect
 import importlib
@@ -26,9 +25,7 @@ def add_docstring_to_stubfile(
     stub_file_path : str
         Target stub file path.
     """
-    tmp_module_path: str = _make_tmp_module(
-        original_module_path=original_module_path)
-    module = _read_module(module_path=tmp_module_path)
+    module = _read_module(module_path=original_module_path)
     stub_str: str = _read_txt(file_path=stub_file_path)
     callable_names: List[str] = _get_callable_names_from_module(
         module=module)
@@ -51,47 +48,6 @@ def add_docstring_to_stubfile(
         stub_str += '\n'
     with open(stub_file_path, 'w') as f:
         f.write(stub_str)
-    os.remove(tmp_module_path)
-
-
-def _make_tmp_module(original_module_path: str) -> str:
-    """
-    Make temporary module to inspect.
-
-    Parameters
-    ----------
-    original_module_path : str
-        Original module path to refor.
-
-    Returns
-    -------
-    tmp_module_path : str
-        Created temporary module path.
-    """
-    tmp_module_path: str = './tmp_stubdoc.py'
-    module_str: str = _read_txt(file_path=original_module_path)
-    module_str = re.sub(
-        pattern=r'\\\n$', repl='', string=module_str)
-    module_str = re.sub(
-        pattern=r'^import .+$', repl='',
-        string=module_str)
-    module_str = re.sub(
-        pattern=r'^from .+$', repl='',
-        string=module_str)
-    tmp_module_str: str = ''
-    module_lines: List[str] = module_str.splitlines()
-    for module_line in module_lines:
-        if (not module_line.startswith('    ')
-                and 'def ' not in module_line
-                and 'class' not in module_line
-                and module_line != ''):
-            continue
-        tmp_module_str += '\n'
-        tmp_module_str += module_line
-
-    with open(tmp_module_path, 'w') as f:
-        f.write(tmp_module_str)
-    return tmp_module_path
 
 
 class _ClassScopeLineRange:
