@@ -1,6 +1,8 @@
 """The module that implements core functions.
 """
 
+import sys
+import os
 import re
 import inspect
 import importlib
@@ -401,12 +403,21 @@ def _read_module(module_path: str) -> ModuleType:
     module : ModuleType
         Read module.
     """
-    name: str = module_path.replace('.py', '')
-    name = name.replace('/', '.')
-    name = name.replace('\\', '.')
-    while name.startswith('.'):
-        name = name.replace('.', '', 1)
-    module: ModuleType = importlib.import_module(name)
+    file_name: str = os.path.basename(module_path)
+    dir_path: str = module_path.replace(file_name, '', 1)
+    sys.path.append(dir_path)
+    package_name: str = module_path.replace('.py', '')
+    package_name = package_name.replace('/', '.')
+    package_name = package_name.replace('\\', '.')
+    while package_name.startswith('.'):
+        package_name = package_name.replace('.', '', 1)
+    try:
+        module: ModuleType = importlib.import_module(package_name)
+    except Exception:
+        raise Exception(
+            'Specified module import failed. Please check specified path'
+            ' is not a upper level directory or root directory (need to be'
+            f' able to import by package path style): {package_name}')
     return module
 
 

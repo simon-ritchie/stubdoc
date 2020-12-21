@@ -46,6 +46,10 @@ def test__read_module() -> None:
         module_path='.\\stubdoc\\stubdoc.py')
     assert module == stubdoc
 
+    with pytest.raises(Exception):  # type: ignore
+        module = stubdoc._read_module(
+            './not_existing_module.py')
+
 
 class _TestClass1:
 
