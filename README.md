@@ -125,6 +125,8 @@ $ pip install stubdoc
 
 # Usage
 
+Notes: specified module need to be able to import. Stubdoc will replace paths to package path (e.g., 'sample/path.py' to 'sample.path'), so that paths argument can not be specified upper level directory or root directory (e.g., '/sample/path.py' or '../sample/path').
+
 ```
 This command will add docstring to stub file. Currently supported one-line stub implementation, like mypy's stubgen
 command, something as follows: def any_func(a: int, b: str) -> None: ... If line break exists after colon, this
@@ -148,6 +150,16 @@ or
 
 ```
 $ stubdoc --module_path samples/sample.py --stub_path out/samples/sample.pyi
+```
+
+Or maybe Python interface is useful, like Django environment:
+
+```py
+from stubdoc import add_docstring_to_stubfile
+
+add_docstring_to_stubfile(
+    original_module_path='sample/path.py',
+    stub_file_path='sample/path.pyi')
 ```
 
 # Limitations
