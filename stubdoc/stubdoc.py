@@ -406,7 +406,7 @@ def _read_module(module_path: str) -> ModuleType:
     file_name: str = os.path.basename(module_path)
     dir_path: str = module_path.replace(file_name, '', 1)
     sys.path.append(dir_path)
-    package_name: str = module_path.replace('.py', '')
+    package_name: str = os.path.splitext(module_path)[0]
     package_name = package_name.replace('/', '.')
     package_name = package_name.replace('\\', '.')
     while package_name.startswith('.'):
