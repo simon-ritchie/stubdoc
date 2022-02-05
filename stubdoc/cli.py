@@ -121,7 +121,7 @@ def _validate_module_path_arg(module_path_arg: Optional[str]) -> None:
     if not os.path.isfile(module_path_arg):
         raise ValueError(
             f'Specified module not found: {module_path_arg}')
-    if not module_path_arg.endswith('.py'):
+    if not os.path.splitext(module_path_arg)[1] in ['.py', '.pyd']:
         raise ValueError(
             f'A non-python module path specified: {module_path_arg}')
 
