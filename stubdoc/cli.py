@@ -6,6 +6,7 @@ import argparse
 from argparse import ArgumentParser
 from argparse import Namespace
 import os
+import importlib
 
 from stubdoc import stubdoc
 
@@ -121,7 +122,7 @@ def _validate_module_path_arg(module_path_arg: Optional[str]) -> None:
     if not os.path.isfile(module_path_arg):
         raise ValueError(
             f'Specified module not found: {module_path_arg}')
-    if not os.path.splitext(module_path_arg)[1] in ['.py', '.pyd']:
+    if not any(module_path_arg.endswith(ending) for ending in importlib.machinery.all_suffixes()):
         raise ValueError(
             f'A non-python module path specified: {module_path_arg}')
 
