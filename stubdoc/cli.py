@@ -122,7 +122,10 @@ def _validate_module_path_arg(module_path_arg: Optional[str]) -> None:
     if not os.path.isfile(module_path_arg):
         raise ValueError(
             f'Specified module not found: {module_path_arg}')
-    if not any(module_path_arg.endswith(ending) for ending in importlib.machinery.all_suffixes()):
+    all_suffixes: List[str] = \
+        importlib.machinery.all_suffixes()  # type: ignore
+    if not any(
+            module_path_arg.endswith(ending) for ending in all_suffixes):
         raise ValueError(
             f'A non-python module path specified: {module_path_arg}')
 
