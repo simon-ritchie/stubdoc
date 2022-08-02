@@ -1,0 +1,22 @@
+name: Deploy to PyPI
+on:
+  push:
+    branches:
+      - main
+jobs:
+  DeployToPyPI:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Set the Python version
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.10
+      - name: Execute the Python package build
+        run: python build.py
+      - name: Upload to PyPI
+        uses: pypa/gh-action-pypi-publish@master
+        with:
+          password: ${{ secrets.PYPI_TOKEN }}
