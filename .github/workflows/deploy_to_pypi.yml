@@ -13,7 +13,7 @@ jobs:
       - name: Set the Python version
         uses: actions/setup-python@v2
         with:
-          python-version: 3.10
+          python-version: 3.10.4
       - name: Execute the Python package build
         run: python build.py
       - name: Upload to PyPI
