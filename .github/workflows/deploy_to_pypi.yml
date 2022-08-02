@@ -16,6 +16,8 @@ jobs:
           python-version: 3.10.4
       - name: Install the Poetry
         run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
+      - name: Apply the Poetry's settings
+        run: source $HOME/.poetry/env
       - name: Install ddependencies
         run: poetry install
       - name: Execute the Python package build
