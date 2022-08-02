@@ -16,9 +16,11 @@ jobs:
           python-version: 3.10.4
       - name: Install the Poetry
         run: curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-      - name: Apply the Poetry's settings
-        run: export PATH="$HOME/.poetry/bin:$PATH"
-      - name: Install ddependencies
+      - name: Append the Poetry's PATH settings to the .bashrc
+        run: echo '$HOME/.poetry/bin:$PATH' >> ~/.bashrc
+      - name: Apply Poetry's PATH setting
+        run: source ~/.bashrc
+      - name: Install dependencies
         run: poetry install
       - name: Execute the Python package build
         run: poetry run python build.py
