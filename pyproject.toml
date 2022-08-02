@@ -1,12 +1,12 @@
 [tool.poetry]
 name = "stubdoc"
-version = "0.1.8"
+version = "0.1.9"
 description = ""
 authors = ["simon-ritchie"]
 license = "MIT LICENSE"
 
 [tool.poetry.dependencies]
-python = "^3.8.0"
+python = "^3.9.14"
 twine = "3.2.0"
 pytest = "4.3.1"
 pytest-cov = "2.7.1"
