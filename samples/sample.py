@@ -24,6 +24,11 @@ def sample_func(a: int, b: str) -> bool:
 
 
 class SampleClass:
+    """
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit,
+    sed do eiusmod tempor incididunt ut labore et dolore magna
+    aliqua. Ut enim ad minim veniam.
+    """
 
     def __init__(self) -> None:
         """
