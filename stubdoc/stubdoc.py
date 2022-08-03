@@ -53,11 +53,58 @@ def add_docstring_to_stubfile(
         stub_str=stub_str)
     class_names = _remove_doc_not_existing_class_from_class_names(
         class_names=class_names, module=module)
+    for class_name in class_names:
+        stub_str = _add_doctring_to_target_class(
+            stub_str=stub_str,
+            class_name=class_name,
+            module=module,
+        )
 
     if not stub_str.endswith('\n'):
         stub_str += '\n'
     with open(stub_file_path, 'w') as f:
         f.write(stub_str)
+
+
+def _add_doctring_to_target_class(
+        *, stub_str: str,
+        class_name: str,
+        module: ModuleType) -> str:
+    """
+    Add a docstring to a specified class.
+
+    Parameters
+    ----------
+    stub_str : str
+        A Target stub file string.
+    class_name : str
+        A target class name.
+    module : ModuleType
+        Stub file's original module.
+
+    Returns
+    -------
+    result_stub_str : str
+        Stub file string after docstring added.
+    """
+    docstring: str = _get_docstring_from_top_level_class(
+        class_name=class_name, module=module)
+    result_docstring: str = '    """'
+    docstring_lines: List[str] = docstring.splitlines()
+    for i, docstring_line in enumerate(docstring_lines):
+        result_docstring += '\n'
+        if i == 0:
+            result_docstring += '    '
+        result_docstring += f'{docstring_line}'
+    result_docstring += '\n    """'
+
+    result_stub_str = re.sub(
+        pattern=rf'^class {class_name}(.*?)\:',
+        repl=rf'class {class_name}\1:\n{result_docstring}',
+        string=stub_str,
+        count=1,
+        flags=re.MULTILINE | re.DOTALL)
+    return result_stub_str
 
 
 def _remove_doc_not_existing_class_from_class_names(
@@ -207,12 +254,12 @@ class _ClassScopeLineRange:
 def _add_docstring_to_class_method(
         stub_str: str, method_name: str, module: ModuleType) -> str:
     """
-    Add docstring to a specified class method.
+    Add a docstring to a specified class method.
 
     Parameters
     ----------
     stub_str : str
-        Target stub file's string.
+        Target stub file string.
     method_name : str
         Target method name (top-level class method only).
         Class name and method name need to be concatenated by comma.
@@ -223,7 +270,7 @@ def _add_docstring_to_class_method(
     Returns
     -------
     result_stub_str : str
-        Stub file's string after docstring added.
+        Stub file string after docstring added.
     """
     class_name: str = method_name.split('.')[0]
     method_name = method_name.split('.')[1]

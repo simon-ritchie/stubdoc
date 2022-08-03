@@ -495,8 +495,22 @@ def test_func() -> int:
 
 
 class _TestClass3:
-    """Lorem ipsum dolor sit amet, consectetur adipis.
     """
+    Lorem ipsum dolor sit amet, consectetur adipis adipiscing
+    elit, sed do eiusmod tempor incididunt ut labore et dolore
+    magna.
+    """
+
+    def __init__(self) -> None:
+        ...
+
+
+class _TestClass4(_TestClass3):
+    """Lorem ipsum dolor sit amet.
+    """
+
+    def __init__(self) -> None:
+        ...
 
 
 def test__get_docstring_from_top_level_class() -> None:
@@ -507,7 +521,8 @@ def test__get_docstring_from_top_level_class() -> None:
 
     docstring = stubdoc._get_docstring_from_top_level_class(
         class_name='_TestClass3', module=this_module)
-    assert docstring == 'Lorem ipsum dolor sit amet, consectetur adipis.'
+    assert docstring.startswith(
+        'Lorem ipsum dolor sit amet, consectetur adipis')
 
 
 def test__remove_doc_not_existing_class_from_class_names() -> None:
@@ -517,3 +532,49 @@ def test__remove_doc_not_existing_class_from_class_names() -> None:
             class_names=['_TestClass1', '_TestClass3'],
             module=this_module)
     assert result_class_names == ['_TestClass3']
+
+
+def test__add_doctring_to_target_class() -> None:
+    stub_str: str = """
+test_value: int = 100
+
+
+class _TestClass3:
+    def __init__(self) -> None:
+        ...
+    """.strip()
+    this_module: ModuleType = sys.modules[__name__]
+    result_stub_str: str = stubdoc._add_doctring_to_target_class(
+        stub_str=stub_str,
+        class_name='_TestClass3',
+        module=this_module)
+    expected: str = '''
+test_value: int = 100
+
+
+class _TestClass3:
+    """
+    Lorem ipsum dolor sit amet, consectetur adipis adipiscing
+    elit, sed do eiusmod tempor incididunt ut labore et dolore
+    magna.
+    """
+    def __init__(self) -> None:
+        ...
+    '''.strip()
+    assert result_stub_str == expected
+
+    stub_str = """
+class _TestClass4(_TestClass3):
+    def __init__(self) -> None:
+        ...
+    """.strip()
+    result_stub_str = stubdoc._add_doctring_to_target_class(
+        stub_str=stub_str, class_name='_TestClass4', module=this_module)
+    expected = '''
+class _TestClass4(_TestClass3):
+    """
+    Lorem ipsum dolor sit amet.
+    """
+    def __init__(self) -> None:
+        ...
+    '''.strip()
