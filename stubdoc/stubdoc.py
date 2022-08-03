@@ -9,7 +9,7 @@ import importlib
 import traceback
 from types import ModuleType
 from typing import Any, Callable, List, Optional, Tuple, Pattern
-from typing import Match
+from typing import Match, Type
 
 
 def add_docstring_to_stubfile(
@@ -51,11 +51,68 @@ def add_docstring_to_stubfile(
 
     class_names: List[str] = _get_top_level_class_names(
         stub_str=stub_str)
+    class_names = _remove_doc_not_existing_class_from_class_names(
+        class_names=class_names, module=module)
 
     if not stub_str.endswith('\n'):
         stub_str += '\n'
     with open(stub_file_path, 'w') as f:
         f.write(stub_str)
+
+
+def _remove_doc_not_existing_class_from_class_names(
+        *, class_names: List[str], module: ModuleType) -> List[str]:
+    """
+    Remove top-level class names from a class names list
+    that docstring does not exist.
+
+    Parameters
+    ----------
+    class_names : List[str]
+        Class names list.
+    module : ModuleType
+        A module that specified classes are defined.
+
+    Returns
+    -------
+    result_class_names : List[str]
+        A list after removing.
+    """
+    result_class_names: List[str] = []
+    for class_name in class_names:
+        docstring: str = _get_docstring_from_top_level_class(
+            class_name=class_name,
+            module=module)
+    pass
+
+
+def _get_docstring_from_top_level_class(
+        *, class_name: str, module: ModuleType) -> str:
+    """
+    Get a docstring from a specified top-level class.
+
+    Parameters
+    ----------
+    class_name : str
+        A target class name.
+    module : ModuleType
+        A module that a specified class is defined.
+
+    Returns
+    -------
+    docstring : str
+        An extracted class docstring.
+    """
+    members: List[Tuple[str, Type]] = inspect.getmembers(
+        object=module, predicate=inspect.isclass)
+    for member_name, member_class in members:
+        if member_name != class_name:
+            continue
+        if member_class.__doc__ is None:
+            return ''
+        docstring: str = member_class.__doc__.strip()
+        return docstring
+    return ''
 
 
 def _get_top_level_class_names(*, stub_str: str) -> List[str]:
@@ -85,6 +142,10 @@ def _get_top_level_class_names(*, stub_str: str) -> List[str]:
 
 
 class _ClassScopeLineRange:
+    """
+    The class that stores specified class's scope line range
+    in stub string.
+    """
 
     _class_name: str
     _stub_str: str
@@ -266,33 +327,33 @@ def _get_docstring_from_top_level_class_method(
 def _remove_doc_not_existing_func_from_callable_names(
         callable_names: List[str], module: ModuleType) -> List[str]:
     """
-    Remove top-level function that docstring not existing from callable
-    names list.
+    Remove top-level function names from a callable names list
+    that docstring does not exist.
 
     Parameters
     ----------
     callable_names : list of str
         Callable names list to check.
     module : ModuleType
-        The module that specified callables are defined.
+        A module that specified callables are defined.
 
     Returns
     -------
-    remove_callable_names : list of str
-        The list that removed docstring not existing functions.
+    result_callable_names : list of str
+        A list after removing.
     """
-    remove_callable_names: List[str] = []
+    result_callable_names: List[str] = []
     for callable_name in callable_names:
         if '.' in callable_name:
-            remove_callable_names.append(callable_name)
+            result_callable_names.append(callable_name)
             continue
         docstring: str = _get_docstring_from_top_level_func(
             function_name=callable_name,
             module=module)
         if docstring == '':
             continue
-        remove_callable_names.append(callable_name)
-    return remove_callable_names
+        result_callable_names.append(callable_name)
+    return result_callable_names
 
 
 def _add_doctring_to_target_function(
@@ -415,7 +476,7 @@ def _get_docstring_from_top_level_func(
         target_function: Callable = member_val
         if target_function.__doc__ is None:
             return ''
-        docstring : str = target_function.__doc__
+        docstring: str = target_function.__doc__
         docstring = docstring.strip()
         return docstring
     return ''

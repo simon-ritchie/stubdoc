@@ -492,3 +492,19 @@ def test_func() -> int:
     class_names: List[str] = stubdoc._get_top_level_class_names(
         stub_str=stub_str)
     assert class_names == ['TestClass1', 'TestClass2']
+
+
+class _TestClass3:
+    """Lorem ipsum dolor sit amet, consectetur adipis.
+    """
+
+
+def test__get_docstring_from_top_level_class() -> None:
+    this_module: ModuleType = sys.modules[__name__]
+    docstring: str = stubdoc._get_docstring_from_top_level_class(
+        class_name='NotExistingClass', module=this_module)
+    assert docstring == ''
+
+    docstring = stubdoc._get_docstring_from_top_level_class(
+        class_name='_TestClass3', module=this_module)
+    assert docstring == 'Lorem ipsum dolor sit amet, consectetur adipis.'
