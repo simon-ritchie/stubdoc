@@ -508,3 +508,12 @@ def test__get_docstring_from_top_level_class() -> None:
     docstring = stubdoc._get_docstring_from_top_level_class(
         class_name='_TestClass3', module=this_module)
     assert docstring == 'Lorem ipsum dolor sit amet, consectetur adipis.'
+
+
+def test__remove_doc_not_existing_class_from_class_names() -> None:
+    this_module: ModuleType = sys.modules[__name__]
+    result_class_names: List[str] = \
+        stubdoc._remove_doc_not_existing_class_from_class_names(
+            class_names=['_TestClass1', '_TestClass3'],
+            module=this_module)
+    assert result_class_names == ['_TestClass3']

@@ -83,7 +83,10 @@ def _remove_doc_not_existing_class_from_class_names(
         docstring: str = _get_docstring_from_top_level_class(
             class_name=class_name,
             module=module)
-    pass
+        if docstring == '':
+            continue
+        result_class_names.append(class_name)
+    return result_class_names
 
 
 def _get_docstring_from_top_level_class(
