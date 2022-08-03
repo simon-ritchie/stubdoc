@@ -6,6 +6,7 @@ import os
 import re
 import inspect
 import importlib
+import traceback
 from types import ModuleType
 from typing import Any, Callable, List, Optional, Tuple
 
@@ -406,6 +407,7 @@ def _read_module(module_path: str) -> ModuleType:
     file_name: str = os.path.basename(module_path)
     dir_path: str = module_path.replace(file_name, '', 1)
     sys.path.append(dir_path)
+    sys.path.append('./')
     package_name: str = ''
     all_suffixes: List[str] = importlib.machinery.all_suffixes()  # type: ignore
     for ending in all_suffixes:
@@ -420,6 +422,7 @@ def _read_module(module_path: str) -> ModuleType:
         module: ModuleType = importlib.import_module(package_name)
     except Exception:
         raise Exception(
+            f'{traceback.format_exc()}\n\n'
             'Specified module import failed. Please check specified path'
             ' is not a upper level directory or root directory (need to be'
             f' able to import by package path style): {package_name}')
