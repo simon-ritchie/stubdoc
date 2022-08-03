@@ -8,7 +8,8 @@ import inspect
 import importlib
 import traceback
 from types import ModuleType
-from typing import Any, Callable, List, Optional, Tuple
+from typing import Any, Callable, List, Optional, Tuple, Pattern
+from typing import Match
 
 
 def add_docstring_to_stubfile(
@@ -47,10 +48,40 @@ def add_docstring_to_stubfile(
             method_name=callable_name,
             module=module,
         )
+
+    class_names: List[str] = _get_top_level_class_names(
+        stub_str=stub_str)
+
     if not stub_str.endswith('\n'):
         stub_str += '\n'
     with open(stub_file_path, 'w') as f:
         f.write(stub_str)
+
+
+def _get_top_level_class_names(*, stub_str: str) -> List[str]:
+    """
+    Get top-level class names from a specified stub string.
+
+    Parameters
+    ----------
+    stub_str : str
+        A target stub string.
+
+    Returns
+    -------
+    class_names : List[str]
+        Extracted top-level class names.
+    """
+    class_names: List[str] = []
+    lines: List[str] = stub_str.splitlines()
+    pattern: Pattern = re.compile(pattern=r'^class (.+?)[\(\:]')
+    for line in lines:
+        match: Optional[Match] = pattern.match(string=line)
+        if match is None:
+            continue
+        class_name: str = match.group(1).strip()
+        class_names.append(class_name)
+    return class_names
 
 
 class _ClassScopeLineRange:

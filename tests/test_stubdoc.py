@@ -468,3 +468,27 @@ class TestClass1:
 '''
     assert result_stub_str == expected_stub_str
     _delete_test_modules_and_stubs()
+
+
+def test__get_top_level_class_names() -> None:
+    stub_str: str = '''
+test_value: int = 10
+
+
+class TestClass1:
+
+    def __init__(self) -> None:
+        ...
+
+class TestClass2(TestClass1):
+
+    def __init__(self) -> None:
+        ...
+
+
+def test_func() -> int:
+    return 20
+    '''.strip()
+    class_names: List[str] = stubdoc._get_top_level_class_names(
+        stub_str=stub_str)
+    assert class_names == ['TestClass1', 'TestClass2']
