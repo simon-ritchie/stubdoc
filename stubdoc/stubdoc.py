@@ -595,7 +595,7 @@ def _get_callable_names_from_module(module: ModuleType) -> List[str]:
             continue
         if member_val.__module__ != module.__name__:
             continue
-        if inspect.isfunction(member_val):
+        if inspect.isroutine(member_val):
             callable_names.append(member_name)
             continue
         if inspect.isclass(member_val):
